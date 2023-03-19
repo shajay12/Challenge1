@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediawiki
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mediawiki
+  template:
+    metadata:
+      labels:
+        app: mediawiki
+    spec:
+      containers:
+      - name: mediawiki
+        image: mediawiki:latest
+        env:
+        - name: MW_DB_HOST
+          value: mysql
+        - name: MW_DB_NAME
+          value: my_wiki
+        - name: MW_DB_USER
+          value: wikiuser
+        - name: MW_DB_PASSWORD
+          value: mypassword
+        volumeMounts:
+        - name: sample-data
+          mountPath: /app/sample-data
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "400Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+      - name: mediawiki-b
+        image: mediawiki:latest
+        env:
+        - name: MW_DB_HOST
+          value: mysql
+        - name: MW_DB_NAME
+          value: my_wiki
+        - name: MW_DB_USER
+          value: wikiuser
+        - name: MW_DB_PASSWORD
+          value: mypassword
+        volumeMounts:
+        - name: sample-data
+          mountPath: /app/sample-data
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "250m"
+          limits:
+            memory: "300Mi"
+            cpu: "500m"
+      - name: mediawiki-c
+        image: mediawiki:latest
+        env:
+        - name: MW_DB_HOST
+          value: mysql
+        - name: MW_DB_NAME
+          value: my_wiki
+        - name: MW_DB_USER
+          value: wikiuser
+        - name: MW_DB_PASSWORD
+          value: mypassword
+        volumeMounts:
+        - name: sample-data
+          mountPath: /app/sample-data
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "400Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+      volumes:
+      - name: sample-data
+        configMap:
+          name: sample-data-cm
+          items:
+          - key: sample-data.csv
+            path: sample-data.csv
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mediawiki
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: mediawiki
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sample-data-cm
+data:
+  sample-data.csv: |
+    Column A, Column B
+    Data A1, Data B1
+    Data A2, Data B2
