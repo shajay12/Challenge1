@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediawiki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mediawiki
+  template:
+    metadata:
+      labels:
+        app: mediawiki
+    spec:
+      containers:
+      - name: mediawiki
+        image: mediawiki:latest
+        env:
+        - name: MW_DB_HOST
+          value: mysql
+        - name: MW_DB_NAME
+          value: my_wiki
+        - name: MW_DB_USER
+          value: wikiuser
+        - name: MW_DB_PASSWORD
+          value: mypassword
+        ports:
+        - containerPort: 80
+          name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mediawiki
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: mediawiki
